@@ -1,0 +1,56 @@
+{% extends 'apps/include_base/include.html' %}
+{% block body %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="container">
+                <h3 class="text-center">To'lov so‘rovi</h3>
+                <p>Xush kelibsiz, {{ user.first_name }} {{ user.last_name }}!</p>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-success">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST" class="mb-4">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.amount.id_for_label }}" class="form-label">{{ form.amount.label }}</label>
+                        {{ form.amount }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.payment_method.id_for_label }}" class="form-label">{{ form.payment_method.label }}</label>
+                        {{ form.payment_method }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">So‘rov yuborish</button>
+                </form>
+
+                <h4>Sizning so‘rovlaringiz</h4>
+                {% if withdraws %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Miqdor</th>
+                                <th>To‘lov usuli</th>
+                                <th>Holati</th>
+                                <th>Yaratilgan vaqt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for withdraw in withdraws %}
+                                <tr>
+                                    <td>{{ withdraw.amount }} so‘m</td>
+                                    <td>{{ withdraw.get_payment_method_display }}</td>
+                                    <td>{{ withdraw.get_status_display }}</td>
+                                    <td>{{ withdraw.created_at|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Hozircha to‘lov so‘rovlaringiz yo‘q.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

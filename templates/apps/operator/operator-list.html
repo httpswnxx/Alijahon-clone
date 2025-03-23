@@ -1,0 +1,355 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operatorlar bo'limi - Buyurtmalar - alijahon.uz</title>
+    <link rel="stylesheet" href="{% static 'apps/assets/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'apps/assets/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'apps/assets/css/styles.css' %}">
+    <style>
+        body {
+            background-color: #e9ecef;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .navbar {
+            background-color: midnightblue;
+            padding: 10px 15px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+
+        .sidebar {
+            background-color: #343a40;
+            width: 250px;
+            padding: 0;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            transition: width 0.2s;
+        }
+
+        .sidebar a {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #fff;
+            padding: 0 15px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #495057;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            padding: 10px;
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .btn-danger {
+            float: right;
+        }
+
+        .table th {
+            background-color: midnightblue;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.3s;
+        }
+
+        .table tbody tr:hover {
+            background-color: #d1ecf1;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 10px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: midnightblue;
+            outline: none;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .table-container {
+            margin-top: 30px;
+        }
+
+        .table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            text-align: center;
+            white-space: nowrap;
+            font-size: 1.2rem;
+            padding: 8px;
+            border: 1px solid #ced4da;
+        }
+
+        .btn-primary {
+            background-color: midnightblue;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 10px;
+            }
+
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<nav class="navbar">
+    <div>Buyurtmalar</div>
+    <h4 class="btn-danger btn-sm" style="color:white;"><b>OPERATORLAR QISMI</b></h4>
+    <a href="/admin_page" class="btn btn-danger btn-sm" style="color:white;">Admin Page</a>
+</nav>
+
+<div class="sidebar">
+    <div class="list-group w-100 h-100">
+        <a href="{% url 'operator_list' %}?status=yangi"
+           class="list-group-item {% if request.GET.status == 'yangi' %}active{% endif %}">
+            <div><i class="fa fa-newspaper-o"></i> Yangi buyurtmalar</div>
+        </a>
+        <a href="{% url 'operator_list' %}?status=tayyor"
+           class="list-group-item {% if request.GET.status == 'tayyor' %}active{% endif %}">
+            <div><i class="fa fa-truck"></i> Dostavka tayyor</div>
+        </a>
+        <a href="{% url 'operator_list' %}?status=yetkazilmoqda"
+           class="list-group-item {% if request.GET.status == 'yetkazilmoqda' %}active{% endif %}">
+            <div><i class="fa fa-truck"></i> Yetkazilmoqda</div>
+        </a>
+        <a href="{% url 'operator_list' %}?status=arxivlandi"
+           class="list-group-item {% if request.GET.status == 'arxivlandi' %}active{% endif %}">
+            <div><i class="fa fa-archive"></i> Arxivlandi</div>
+        </a>
+        <a href="{% url 'operator_list' %}?status=yetkazib_berildi"
+           class="list-group-item {% if request.GET.status == 'yetkazib_berildi' %}active{% endif %}">
+            <div><i class="fa fa-shopping-cart"></i> Yetkazib berildi</div>
+        </a>
+        <a href="{% url 'operator_list' %}?status=bekor_qilindi"
+           class="list-group-item {% if request.GET.status == 'bekor_qilindi' %}active{% endif %}">
+            <div><i class="fa fa-shopping-cart"></i> Bekor qilindi</div>
+        </a>
+        <a href="{% url 'operator_list' %}?status=telefon_kotarmadi"
+           class="list-group-item {% if request.GET.status == 'telefon_kotarmadi' %}active{% endif %}">
+            <div><i class="fa fa-shopping-cart"></i> Telefon kotarmadi</div>
+        </a>
+        <a href="{% url 'operator_list' %}" class="list-group-item {% if not request.GET.status %}active{% endif %}">
+            <div><i class="fa fa-newspaper-o"></i> Hammasi</div>
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="bg-light w-100 m-auto mt-4 p-4">
+        <h5 class="section-title">Yangi Buyurtma Yaratish</h5>
+        <form method="post" action="{% url 'create_operator_order' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_district">Tuman:</label>
+                <select name="district" id="id_district" class="form-control" required
+                        onchange="fetchRegions(this.value)">
+                    <option value="">Tumanni tanlang</option>
+                    {% for region in regions %}
+                        <option value="{{ region.id }}">{{ region.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="id_region">Viloyat:</label>
+                <select name="region" id="id_region" class="form-control" required onchange="fetchRegions(this.value)">
+                    <option value="">Viloyatni tanlang</option>
+                    {% for district in districts %}
+                        <option value="{{ district.id }}">{{ district.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="id_product">Mahsulot:</label>
+                <select name="product" id="id_product" class="form-control" required>
+                    {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="id_quantity">Buyurtma soni (1 yoki 2):</label>
+                <input type="number" name="quantity" id="id_quantity" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="id_full_name">Buyurtmaning egasi (Kozimov Temur):</label>
+                <input type="text" name="full_name" id="id_full_name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="id_phone">Telefon (998970501655):</label>
+                <input type="text" name="phone" id="id_phone" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="id_stream">Oqim:</label>
+                <select name="stream" id="id_stream" class="form-control">
+                    <option value="">Oqimni tanlang</option>
+                    {% for stream in streams %}
+                        <option value="{{ stream.id }}">{{ stream.name|default:'--' }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="id_owner">Mahsulot beruvchi (Operator):</label>
+                <select name="owner" id="id_owner" class="form-control">
+                    <option value="">Mahsulot beruvchini tanlang</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.phone }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="id_courier">Mahsulot Yetkazib beruvchi :</label>
+                <select name="courier" id="id_courier" class="form-control">
+                    <option value="">Mahsulot yetkazib beruvchini tanlang</option>
+                    {% for courier in couriers %}
+                        <option value="{{ courier.id }}">{{ courier.first_name }} {{ courier.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <input class="btn btn-primary" type="submit" value="Buyurtma Yaratish">
+        </form>
+
+        <h5 class="section-title mt-5">Buyurtmalar</h5>
+
+        <div class="search-container">
+            <form method="get" action="{% url 'operator_list' %}">
+                <input type="text" name="search" placeholder="Buyurtmani qidiring..." class="form-control"
+                       style="display: inline-block; width: auto; max-width: 300px;">
+                <button type="submit" class="btn btn-primary">Qidirish</button>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <div class="table-container">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                    <tr>
+                        <th>Mahsulot Nomi</th>
+                        <th>Mahsulot Soni</th>
+                        <th>Qabul Qiluvchi</th>
+                        <th>Oqim</th>
+                        <th>Holati</th>
+                        <th>Amallar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.product.name }}</td>
+                            <td>{{ order.quantity }}</td>
+                            <td>{{ order.full_name }}</td>
+                            <td>{{ order.stream|default:'- (yoq)' }}</td>
+                            <td>{{ order.status }}</td>
+                            <td>
+                                <a href="{% url 'operator_detail' order.id %}">Batafsil</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div>© 2024 Online Bozor. Barcha huquqlari himoyalangan.</div>
+    </footer>
+</div>
+
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://unpkg.com/multiple-select@1.5.2/dist/multiple-select.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% include 'apps/include_base/scripts.html' %}
+</body>
+
+</html>

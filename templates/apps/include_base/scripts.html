@@ -1,0 +1,118 @@
+{# ====================== Wishlist script ====================== #}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const removeButtons = document.querySelectorAll('.remove-wishlist');
+
+        removeButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const productId = this.getAttribute('data-product-id');
+                const url = this.getAttribute('data-url');
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.liked === false) {
+                            const item = document.getElementById(`wishlist-item-${productId}`);
+                            if (item) {
+                                item.remove();
+                            }
+
+                            const remainingItems = document.querySelectorAll('.col').length;
+                            if (remainingItems === 0) {
+                                const container = document.querySelector('.card-body');
+                                container.innerHTML = `
+                                    <div class="text-center py-5">
+                                        <p class="text-muted fs-4">Hozircha yoqtirgan mahsulotlaringiz yo‘q</p>
+                                    </div>
+                                `;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Xatolik:', error);
+                        alert('Mahsulotni o‘chirishda xatolik yuz berdi.');
+                    });
+            });
+        });
+    });
+</script>
+
+
+{# ====================== Order script ====================== #}
+
+<script>
+    fetch("{% url 'order' %}", {
+        method: "POST",
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById("orderStatus").innerText = data.error;
+            } else {
+                window.location.href = "{% url 'order' %}";
+            }
+        })
+        .catch(error => console.log(error));
+</script>
+
+{# ====================== Phone number script ====================== #}
+
+<script>
+    $('#phone-mask').inputmask({
+        "mask": "+\\9\\98(99) 999-99-99"
+    });
+    $('#messages-modal').modal('show');
+</script>
+
+
+{# ====================== Districts script ====================== #}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#id_region").change(function () {
+            let region_id = $(this).val();
+            if (region_id) {
+                $.ajax({
+                    url: "{% url 'districts_list' %}",
+                    data: {"region_id": region_id},
+                    dataType: "json",
+                    success: function (data) {
+                        console.log("Data received:", data);
+                        let citySelect = $("#id_district");
+                        citySelect.empty();
+                        citySelect.append('<option value="">Tumanni tanlang</option>');
+                        $.each(data, function (index, city) {
+                            citySelect.append('<option value="' + city.id + '">' + city.name + '</option>');
+                        });
+                    }
+                });
+            } else {
+                $("#id_district").empty();
+                $("#id_district").append('<option value="">Tumanni tanlang</option>');
+            }
+        });
+    });
+</script>
+
+{# ====================== Create stream script ====================== #}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".btn_open_modal").forEach(button => {
+            button.addEventListener("click", function () {
+                let productId = this.getAttribute("data-product-id");
+                document.getElementById("hidden_product").value = productId;
+                console.log("Mahsulot ID qo‘yildi:", productId);
+            });
+        });
+    });
+</script>

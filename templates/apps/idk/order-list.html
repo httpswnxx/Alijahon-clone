@@ -1,10 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% extends 'apps/include_base/include.html' %}
+{% block body %}
+    <div class="card mb-3" id="ordersTable"
+         data-list='{"valueNames":["order","date","status","amount"],"page":10,"pagination":true}'>
+        <div class="card-header">
+            <div class="row flex-between-center">
+                <div class="col-4 col-sm-auto d-flex align-items-center pe-0">
+                    <h5 class="fs-0 mb-0 text-nowrap py-2 py-xl-0">Buyurtmalarim</h5>
+                </div>
+                <div class="col-8 col-sm-auto ms-auto text-end ps-0">
+                    <div id="orders-actions">
+                        <a href="{% url 'product_list' 'all' %}" class="btn btn-falcon-default btn-sm">
+                            <span class="fas fa-plus" data-fa-transform="shrink-3 down-2"></span>
+                            <span class="d-none d-sm-inline-block ms-1">Yangi</span>
+                        </a>
+                        <button class="btn btn-falcon-default btn-sm mx-2" type="button">
+                            <span class="fas fa-filter" data-fa-transform="shrink-3 down-2"></span>
+                            <span class="d-none d-sm-inline-block ms-1">Filtr</span>
+                        </button>
+                        <button class="btn btn-falcon-default btn-sm" type="button">
+                            <span class="fas fa-external-link-alt" data-fa-transform="shrink-3 down-2"></span>
+                            <span class="d-none d-sm-inline-block ms-1">Eksport</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive scrollbar">
+                <table class="table table-sm table-striped fs--1 mb-0 overflow-hidden">
+                    <thead class="bg-200 text-900">
+                    <tr>
+                        <th class="sort pe-2 align-middle white-space-nowrap" data-sort="order">Buyurtma</th>
+                        <th class="sort pe-2 align-middle white-space-nowrap pe-7" data-sort="date">Sana</th>
+                        <th class="sort pe-2 align-middle white-space-nowrap text-center" data-sort="status">Holati</th>
+                        <th class="sort pe-2 align-middle white-space-nowrap text-end" data-sort="amount">Narxi</th>
+                        <th class="no-sort"></th>
+                    </tr>
+                    </thead>
+                    <tbody class="list" id="table-orders-body">
+                    {% for order in orders %}
+                        <tr class="btn-reveal-trigger">
+                            <td class="order py-2 align-middle white-space-nowrap">
+                                <a href="{% url 'orders' %}"><strong>#{{ order.id }}</strong></a>
+                                by <strong>{{ order.full_name }}</strong><br>
+                                <a href="mailto:{{ order.phone_number }}">{{ order.phone_number }}</a>
+                            </td>
+                            <td class="date py-2 align-middle">{{ order.ordered_at }}</td>
+                            <td class="status py-2 align-middle text-center fs-0 white-space-nowrap">
+                                <span class="badge badge rounded-pill d-block badge-soft-primary">
+                                    {{ order.status }}
+                                    <span class="fas fa-redo ms-1" data-fa-transform="shrink-2"></span>
+                                </span>
+                            </td>
+                            <td class="amount py-2 align-middle text-end fs-0 fw-medium">{{ order.amount }}</td>
+                            <td class="py-2 align-middle white-space-nowrap text-end">
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-3">Hozircha buyurtmalar yo‘q</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

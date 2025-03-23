@@ -1,0 +1,58 @@
+{% extends "apps/include_base/include.html" %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Buyurtma berish</h2>
+        <form method="post" action="{% url 'order' %}" id="orderForm">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="full_name" class="form-label">Ismingiz:</label>
+                <input type="text" name="full_name" id="full_name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone_number" class="form-label">Telefon raqamingiz:</label>
+                {{ form.phone_number }}
+            </div>
+
+            <div class="mb-3">
+                <label for="product" class="form-label">Mahsulot nomi:</label>
+                {{ form.product }}
+            </div>
+
+            <div class="mb-3">
+                <label for="thread" class="form-label">Thread (optional):</label>
+                {{ form.thread }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Buyurtma berish</button>
+        </form>
+        <p id="orderStatus"></p>
+    </div>
+
+    <script>
+        document.getElementById("orderForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    let formData = new FormData(this);
+
+    try {
+        let response = await fetch("{% url 'order' %}", {
+            method: "POST",
+            body: formData,
+        });
+
+        let data = await response.json();  // ✅ Ensure JSON parsing
+
+        if (response.ok) {
+            document.getElementById("orderStatus").innerText = data.message;
+        } else {
+            document.getElementById("orderStatus").innerText = data.error || "An error occurred!";
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+        document.getElementById("orderStatus").innerText = "Network error!";
+    }
+});
+
+    </script>
+{% endblock %}

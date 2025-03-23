@@ -1,0 +1,105 @@
+{% extends 'apps/include_base/include.html' %}
+{% block body %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Oqim yaratish</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{% url 'create_stream' %}" class="form-class">
+                                {% csrf_token %}
+                                <input name="product" type="hidden" id="hidden_product" value="">
+                                <div class="form-group mb-3">
+                                    <label for="id_name">Oqim nomi</label>
+                                    <input type="text" name="name" class="form-control"
+                                           placeholder="Oqim uchun nom kiriting" required id="id_name">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="id_discount">Chegirma (%)</label>
+                                    <input type="number" name="discount" class="form-control"
+                                           placeholder="Chegirma miqdori" step="0.01" id="id_discount">
+                                </div>
+                                <input type="submit" class="btn btn-primary" value="Oqim yaratish">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <br><br>
+                <h3 class="text-center">Hozirda sotuvda bor <br> mahsulotlar</h3>
+                <br>
+
+                <div class="container border-bottom-4">
+                    <div class="header_tab_menu">
+                        <div class="header_menu" style="overflow: auto">
+                            <a href="{% url 'market' %}" class="btn btn-default">Hammasi</a>
+                            {% for category in categories %}
+                                <a href="{% url 'market' %}?category={{ category.slug }}"
+                                   class="btn btn-default">{{ category.name }}</a>
+                            {% endfor %}
+                        </div>
+                        <div class="search-box" style="width: 100%;">
+                            <form action="{% url 'market' %}" method="GET" class="position-relative" style="width: 100%"
+                                  autocomplete="off">
+                                {% csrf_token %}
+                                <input id="search-input" name="query" class="form-control search-input fuzzy-search"
+                                       type="search" placeholder="Search..." aria-label="Search"/>
+                                <i class="fa-solid fa-magnifying-glass search-box-icon"></i>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    {% for product in products %}
+                        <div class="col-sm-4 p-2">
+                            <div class="card">
+                                <a href="{% url 'product_detail' product.slug %}" target="_blank">
+                                   <img class="card-img-top" src="{{ product.image.url }}"
+                                                         alt="{{ product.name }}"
+                                                         style="width: 200px; height: 200px;"/>
+                                </a>
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="{% url 'product_detail' product.slug %}" target="_blank">
+                                            {{ product.name }}
+                                        </a>
+                                    </h5>
+                                    <p class="text-muted">{{ product.price }} so'm</p>
+                                    <button class="btn btn-primary btn_open_modal action-btn" type="button"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModal"
+                                            data-product-id="{{ product.pk }}">
+                                        Oqim yaratish
+                                    </button>
+                                    <a href="{% url 'product_detail' product.slug %}"
+                                       class="btn btn-primary mt-2 action-btn">Batafsil</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12 text-center">
+                            <p>Hozircha mahsulotlar yo‘q</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .action-btn {
+            width: 100%;
+            max-width: 200px;
+            text-align: center;
+        }
+    </style>
+
+    {% include 'apps/include_base/scripts.html' %}
+{% endblock %}

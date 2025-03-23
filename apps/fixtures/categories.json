@@ -1,0 +1,38 @@
+[
+  {
+    "model": "apps.Category",
+    "pk": 1,
+    "fields": {
+      "name": "Uy uchun",
+      "slug": "uy-uchun",
+      "icon": "https://img.icons8.com/arcade/40/home.png"
+    }
+  },
+  {
+    "model": "apps.Category",
+    "pk": 2,
+    "fields": {
+      "name": "Sport",
+      "slug": "sport",
+      "icon": "https://img.icons8.com/color/40/beach-soccer.png"
+    }
+  },
+  {
+    "model": "apps.Category",
+    "pk": 3,
+    "fields": {
+      "name": "Sneklar",
+      "slug": "sneklar",
+      "icon": "https://img.icons8.com/color-glass/40/kawaii-french-fries.png"
+    }
+  },
+  {
+    "model": "apps.Category",
+    "pk": 4,
+    "fields": {
+      "name": "Telefon",
+      "slug": "telefon",
+      "icon": "https://img.icons8.com/ios-filled/40/phone.png"
+    }
+  }
+]

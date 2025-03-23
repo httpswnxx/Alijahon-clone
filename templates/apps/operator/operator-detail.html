@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operatorlar bo'limi - Buyurtma Detallari - alijahon.uz</title>
+    <link rel="stylesheet" href="{% static 'apps/assets/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'apps/assets/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'apps/assets/css/styles.css' %}">
+    <style>
+        body {
+            background-color: #e9ecef;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .navbar {
+            background-color: midnightblue;
+            padding: 10px 15px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+
+        .sidebar {
+            background-color: #343a40;
+            width: 250px;
+            padding: 0;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            transition: width 0.2s;
+        }
+
+        .sidebar a {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #fff;
+            padding: 0 15px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #495057;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            padding: 10px;
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .btn-danger {
+            float: right;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .btn-primary {
+            background-color: midnightblue;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 10px;
+            }
+
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div>Buyurtma Detallari</div>
+        <h4 class="btn-danger btn-sm" style="color:white;"><b>OPERATORLAR QISMI</b></h4>
+        <a href="/admin_page" class="btn btn-danger btn-sm" style="color:white;">Admin Page</a>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="list-group w-100 h-100">
+            <a href="{% url 'operator_list' %}?status=yangi"
+               class="list-group-item {% if request.GET.status == 'yangi' %}active{% endif %}">
+                <div><i class="fa fa-newspaper-o"></i> Yangi buyurtmalar</div>
+            </a>
+            <a href="{% url 'operator_list' %}?status=tayyor"
+               class="list-group-item {% if request.GET.status == 'tayyor' %}active{% endif %}">
+                <div><i class="fa fa-truck"></i> Dostavka tayyor</div>
+            </a>
+            <a href="{% url 'operator_list' %}?status=yetkazilmoqda"
+               class="list-group-item {% if request.GET.status == 'yetkazilmoqda' %}active{% endif %}">
+                <div><i class="fa fa-truck"></i> Yetkazilmoqda</div>
+            </a>
+            <a href="{% url 'operator_list' %}?status=arxivlandi"
+               class="list-group-item {% if request.GET.status == 'arxivlandi' %}active{% endif %}">
+                <div><i class="fa fa-archive"></i> Arxivlandi</div>
+            </a>
+            <a href="{% url 'operator_list' %}?status=yetkazib_berildi"
+               class="list-group-item {% if request.GET.status == 'yetkazib_berildi' %}active{% endif %}">
+                <div><i class="fa fa-shopping-cart"></i> Yetkazib berildi</div>
+            </a>
+            <a href="{% url 'operator_list' %}?status=bekor_qilindi"
+               class="list-group-item {% if request.GET.status == 'bekor_qilindi' %}active{% endif %}">
+                <div><i class="fa fa-shopping-cart"></i> Bekor qilindi</div>
+            </a>
+            <a href="{% url 'operator_list' %}?status=telefon_kotarmadi"
+               class="list-group-item {% if request.GET.status == 'telefon_kotarmadi' %}active{% endif %}">
+                <div><i class="fa fa-shopping-cart"></i> Telefon kotarmadi</div>
+            </a>
+            <a href="{% url 'operator_list' %}" class="list-group-item {% if not request.GET.status %}active{% endif %}">
+                <div><i class="fa fa-newspaper-o"></i> Hammasi</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="bg-light w-100 m-auto mt-4 p-4">
+            <h5 class="section-title">Buyurtma Detallari</h5>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <p><strong>Mahsulot:</strong> {{ order.product.name }}</p>
+                    <p><strong>Soni:</strong> {{ order.quantity }}</p>
+                    <p><strong>Qabul Qiluvchi:</strong> {{ order.full_name }}</p>
+                    <p><strong>Telefon:</strong> {{ order.phone_number }}</p>
+                    <p><strong>Oqim:</strong> {{ order.stream|default:"Yo‘q" }}</p>
+                    <p><strong>Holati:</strong> {{ order.get_status_display }}</p>
+                    <p><strong>Yaratilgan Vaqt:</strong> {{ order.ordered_at|date:"Y-m-d H:i" }}</p>
+                    <a href="{% url 'operator_list' %}" class="btn btn-primary">Orqaga</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div>© 2024 Online Bozor. Barcha huquqlari himoyalangan.</div>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/multiple-select@1.5.2/dist/multiple-select.min.js"></script>
+</body>
+
+</html>

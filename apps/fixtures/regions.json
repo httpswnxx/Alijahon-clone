@@ -1,0 +1,37 @@
+[
+    {
+        "model": "apps.region",
+        "pk": 1,
+        "fields": {
+            "name": "Chilonzor"
+        }
+    },
+    {
+        "model": "apps.region",
+        "pk": 2,
+        "fields": {
+            "name": "Andijon shaxri"
+        }
+    },
+    {
+        "model": "apps.region",
+        "pk": 3,
+        "fields": {
+            "name": "Xiva"
+        }
+    },
+    {
+        "model": "apps.region",
+        "pk": 4,
+        "fields": {
+            "name": "Keles"
+        }
+    },
+    {
+        "model": "apps.region",
+        "pk": 5,
+        "fields": {
+            "name": "Denov"
+        }
+    }
+]

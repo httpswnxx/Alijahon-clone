@@ -1,0 +1,42 @@
+[
+    {
+        "model": "apps.district",
+        "pk": 1,
+        "fields": {
+            "name": "Toshkent shaxar",
+            "region": 1
+        }
+    },
+    {
+        "model": "apps.district",
+        "pk": 2,
+        "fields": {
+            "name": "Andijon",
+            "region": 2
+        }
+    },
+    {
+        "model": "apps.district",
+        "pk": 3,
+        "fields": {
+            "name": "Xorazm",
+            "region": 3
+        }
+    },
+    {
+        "model": "apps.district",
+        "pk": 4,
+        "fields": {
+            "name": "Toshkent",
+            "region": 4
+        }
+    },
+    {
+        "model": "apps.district",
+        "pk": 5,
+        "fields": {
+            "name": "Surxondaryo",
+            "region": 5
+        }
+    }
+]

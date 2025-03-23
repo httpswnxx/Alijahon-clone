@@ -1,0 +1,92 @@
+{% extends 'apps/include_base/include.html' %}
+
+{% block body %}
+    <div class="card mb-3">
+        <div class="card-body">
+            {% for thread in threads %}
+                <div class="modal fade" id="exampleModal_{{ thread.pk }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel_{{ thread.pk }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel_{{ thread.pk }}">Facebook dan olingan lidlarni yuklash</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" class="form-class" action="{% url 'stream-list' %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <input name="stream_id" type="hidden" id="hidden_stream_id_{{ thread.pk }}" value="{{ thread.pk }}">
+                                    <input name="file" type="file" accept=".csv" required="">
+                                    <input type="submit" class="btn btn-primary mt-4" value="Csv fayl yuklash">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="container">
+                <br>
+                <h3 class="text-center">Mening havolalarim</h3>
+                <br>
+
+                <!-- Xabarlar -->
+                {% if messages %}
+                    <div class="alert-container">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    {% for thread in threads %}
+                        <div class="col-sm-4">
+                            <div class="card-header">
+                                <h5>{{ thread.name }} - {{ thread.discount_sum|floatformat }}</h5>
+                            </div>
+                            <div class="card">
+                                <div class="card-body" style="position: relative;">
+                                    <div class="form-group">
+                                        <input type="text" value="{{ request.get_host }}/thread/{{ thread.pk }}" readonly="" class="ref_link form-control">
+                                    </div>
+                                    <button class="copy_ref_bn btn btn-primary" style="float:left; margin-right:9px; margin-top: 9px;">Nusxa ko'chirish</button>
+                                    <a href="{{ request.get_host }}/thread/{{ thread.pk }}" target="_blank">
+                                        <i class="fa-solid fa-square-arrow-up-right" style="font-size: 29px; float:left; color:#e52c2c; margin-top: 9px; margin-right:9px;"></i>
+                                    </a>
+                                    <!-- CSV yuklash tugmasi -->
+                                    <button type="button" class="btn btn-secondary" style="float:left; margin-top: 9px;" data-toggle="modal" data-target="#exampleModal_{{ thread.pk }}">
+                                        CSV yuklash
+                                    </button>
+                                </div>
+                            </div>
+                            <br>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <p class="text-center">Hozircha hech qanday oqim mavjud emas.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nusxa ko‘chirish uchun JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.copy_ref_bn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const input = this.parentElement.querySelector('.ref_link');
+                    input.select();
+                    document.execCommand('copy');
+                    alert('Havola nusxa ko‘chirildi!');
+                });
+            });
+        });
+    </script>
+{% endblock %}

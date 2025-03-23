@@ -1,0 +1,99 @@
+{% extends 'apps/include_base/include.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="m-0">Yoqtirgan mahsulotlaringiz</h3>
+            </div>
+            <div class="card-body">
+                {% if wishlists %}
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for wishlist in wishlists %}
+                            <div class="col" id="wishlist-item-{{ wishlist.product.id }}">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="position-relative">
+                                        {% if wishlist.product.image %}
+                                            <a href="{% url 'product_detail' wishlist.product.slug %}" class="d-block">
+                                                <img src="{{ wishlist.product.image.url }}" class="card-img-top"
+                                                     alt="{{ wishlist.product.name }}"
+                                                     style="width: 200px; height: 200px; object-fit: cover;"
+                                                     onerror="this.src='{% static 'apps/assets/img/no-image.png' %}';">
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'product_detail' wishlist.product.slug %}" class="d-block">
+                                                <img src="{% static 'apps/assets/img/no-image.png' %}" class="card-img-top"
+                                                     alt="{{ wishlist.product.name }}"
+                                                     style="width: 200px; height: 200px; object-fit: cover;">
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body p-3">
+                                        <h5 class="card-title">
+                                            <a href="{% url 'product_detail' wishlist.product.slug %}" class="text-dark text-decoration-none">
+                                                {{ wishlist.product.name }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-warning mb-2">
+                                            <strong>{{ wishlist.product.price|floatformat:"0"|intcomma }} so'm</strong>
+                                        </p>
+                                    </div>
+                                    <div class="card-footer bg-light d-flex justify-content-between p-2">
+                                        <a href="{% url 'product_detail' wishlist.product.slug %}"
+                                           class="btn btn-sm btn-outline-primary me-2 w-50"
+                                           data-bs-toggle="tooltip" data-bs-placement="top" title="Buyurtma qilish">
+                                            Buyurtma
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger w-50 remove-wishlist"
+                                                data-product-id="{{ wishlist.product.id }}"
+                                                data-url="{% url 'wishlist' wishlist.product.id %}"
+                                                data-bs-toggle="tooltip" data-bs-placement="top" title="O‘chirish">
+                                            O‘chirish
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted fs-4">Hozircha yoqtirgan mahsulotlaringiz yo‘q</p>
+                    </div>
+                {% endif %}
+            </div>
+            {% if page_obj %}
+                <div class="card-footer bg-light d-flex justify-content-center py-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                        <span aria-hidden="true">«</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">{{ page_obj.number }}</span>
+                            </li>
+                            {% if page_obj.has_next or page_obj.number != page_obj.paginator.num_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+                                </li>
+                            {% endif %}
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                        <span aria-hidden="true">»</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% include 'apps/include_base/scripts.html' %}
+{% endblock %}

@@ -1,7 +1,11 @@
+from ckeditor_uploader.fields import RichTextUploadingField
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db.models import Model, CharField, ForeignKey, DecimalField, ImageField, DateTimeField, CASCADE, TextField, \
-    IntegerField, SET_NULL, BigIntegerField, TextChoices, SlugField
+    IntegerField, SET_NULL, BigIntegerField, TextChoices, SlugField, FloatField, DateField
+from django.utils.text import slugify
+
+from alijahon import settings
 
 
 class CustomUserManager(UserManager):
@@ -32,6 +36,25 @@ class CustomUserManager(UserManager):
         return self._create_user(phone_number, password, **extra_fields)
 
 
+class BaseSlugify(Model):
+    name = CharField(max_length=100)
+    slug = CharField(max_length=100, unique=True)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        original_slug = self.slug
+        i = 1
+        while self.__class__.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+            self.slug = f"{original_slug}-{i}"
+            i += 1
+
+        super().save(*args, **kwargs)
+
+
 class User(AbstractUser):
     class RoleType(TextChoices):
         ADMIN = 'admin', 'Admin'
@@ -50,8 +73,7 @@ class User(AbstractUser):
     role = CharField(max_length=10, choices=RoleType, default=RoleType.USER)
     full_name = CharField(max_length=255, blank=True, null=True)
     profile_image = ImageField(upload_to='profile_images/', blank=True, null=True)
-
-
+    balance = DecimalField(max_digits=15, decimal_places=2, default=0.00, verbose_name="Balans")
 
 
 class Region(Model):
@@ -63,21 +85,35 @@ class District(Model):
     region = ForeignKey('Region', on_delete=CASCADE)
 
 
-class Category(Model):
-    name = CharField(max_length=255)
+class Category(BaseSlugify):
     icon = CharField(max_length=255)
-    image = ImageField(upload_to='category_images/', null=True, blank=True)
-    slug = SlugField(unique=True)
+    image = ImageField(upload_to='category_images/')
+
+    def __str__(self):
+        return self.name
+
 
 class Product(Model):
     name = CharField(max_length=255)
-    description = TextField()
+    slug = SlugField(unique=True, blank=True, null=True)
+    category = ForeignKey('Category', on_delete=CASCADE)
     price = DecimalField(max_digits=10, decimal_places=2)
     image = ImageField(upload_to='products/')
-    category = ForeignKey('Category', on_delete=CASCADE)
+    description = TextField()
 
-    class Meta:
-        ordering = ['name']
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            while Product.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
 
 
 class Wishlist(Model):
@@ -112,6 +148,18 @@ class Order(Model):
     product = ForeignKey('Product', on_delete=CASCADE)
     quantity = IntegerField(default=1)
     status = CharField(max_length=20, choices=StatusType, default=StatusType.NEW)
+    full_name = CharField(max_length=255)
+    total_sum = DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    @property
+    def amount(self):
+        try:
+            if self.product and self.product.price is not None:
+                return float(self.quantity) * float(self.product.price)
+            return 0.0
+        except (AttributeError, TypeError, ValueError) as e:
+            print(f"Error calculating amount for order {self.id}: {e}")
+            return 0.0
 
 
 class Payment(Model):
@@ -126,3 +174,50 @@ class Payment(Model):
     payment_at = DateTimeField(auto_now_add=True)
     status = CharField(max_length=10, choices=StatusType, default=StatusType.REVIEW)
     description = TextField(blank=True, null=True)
+
+
+class Stream(Model):
+    name = CharField(max_length=255)
+    discount = FloatField()
+    count = IntegerField(default=0)
+    product = ForeignKey('apps.Product', SET_NULL, null=True, related_name='streams')
+    owner = ForeignKey('apps.User', CASCADE, related_name='streams')
+
+    class Meta:
+        ordering = '-id',
+
+    def __str__(self):
+        return self.name
+
+
+class AdminSetting(Model):
+    deliver_price = DecimalField(max_digits=5, decimal_places=0)
+    competition_photo = ImageField(upload_to='admin/')
+    start = DateField()
+    finish = DateField()
+    description = RichTextUploadingField()
+
+
+
+class Withdraw(Model):
+    user = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='withdraws')
+    amount = DecimalField(max_digits=15, decimal_places=2, verbose_name="Miqdor (so‘m)")
+    payment_method = CharField(
+        max_length=20,
+        choices=[('card', 'Karta'), ('cash', 'Naqd')],
+        verbose_name="To‘lov usuli"
+    )
+    status = CharField(
+        max_length=20,
+        choices=[('pending', 'Kutilmoqda'), ('approved', 'Tasdiqlangan'), ('rejected', 'Rad etilgan')],
+        default='pending',
+        verbose_name="Holati"
+    )
+    created_at = DateTimeField(auto_now_add=True, verbose_name="Yaratilgan vaqt")
+
+    def __str__(self):
+        return f"{self.user} - {self.amount} so‘m - {self.status}"
+
+    class Meta:
+        verbose_name = "To‘lov so‘rovi"
+        verbose_name_plural = "To‘lov so‘rovlari"
