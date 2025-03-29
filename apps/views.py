@@ -10,8 +10,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
-from django.views.generic import ListView, FormView, TemplateView, DetailView
-from apps.forms import AuthForm, ProfileUpdateForm, CustomPasswordChangeForm, OrderForm, StreamForm, WithdrawForm
+from django.views.generic import ListView, FormView, TemplateView, DetailView, UpdateView
+from apps.forms import AuthForm, ProfileUpdateForm, CustomPasswordChangeForm, OrderForm, StreamForm, WithdrawForm, \
+    OrderModelForm
 from apps.models import User, Product, Category, District, Region, Wishlist, Order, Stream, AdminSetting, Withdraw
 
 
@@ -400,96 +401,81 @@ class DiagramView(LoginRequiredMixin, View):
         return render(request, 'apps/idk/diagrams.html')
 
 
-class OperatorListView(LoginRequiredMixin, ListView):
-    template_name = 'apps/operator/operator-list.html'
-    context_object_name = 'orders'
-    login_url = reverse_lazy('login')
 
-    def get_queryset(self):
-        queryset = Order.objects.all()
-        status = self.request.GET.get('status')
-        if status:
-            if status == 'yangi':
-                queryset = queryset.filter(status=Order.StatusType.NEW)
-            elif status == 'tayyor':
-                queryset = queryset.filter(status=Order.StatusType.READY_TO_ORDER)
-            elif status == 'yetkazilmoqda':
-                queryset = queryset.filter(status=Order.StatusType.DELIVERING)
-            elif status == 'yetkazib_berildi':
-                queryset = queryset.filter(status=Order.StatusType.DELIVERED)
-            elif status == 'telefon_kotarmadi':
-                queryset = queryset.filter(status=Order.StatusType.NOT_PICK_UP)
-            elif status == 'bekor_qilindi':
-                queryset = queryset.filter(status=Order.StatusType.CANCELED)
-            elif status == 'arxivlandi':
-                pass
 
-        search_query = self.request.GET.get('search')
-        if search_query:
-            queryset = queryset.filter(
-                Q(full_name__icontains=search_query) |
-                Q(product__name__icontains=search_query) |
-                Q(phone_number__icontains=search_query)
-            )
 
-        return queryset
+class OperatorTemplateView(TemplateView):
+    template_name = "apps/operator/operator-page.html"
+    def post(self,request):
+        context = self.get_context_data()
+        return render(request, 'apps/operator/operator-page.html', context)
+
+
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        data = super().get_context_data(**kwargs)
+        status = self.request.GET.get('status')
 
-        context['products'] = Product.objects.all()
-        context['regions'] = Region.objects.all()
-        context['streams'] = Stream.objects.all()
-        context['users'] = User.objects.filter(role='operator')
-        context['couriers'] = User.objects.filter(role='courier')
-        context['districts'] = District.objects.all()
-        return context
+        category_id = self.request.POST.get('category_id')
+        district_id = self.request.POST.get('district_id')
+        data['status'] = Order.StatusType.values
+        data['categories'] =  Category.objects.all()
+        data['regions'] =  Region.objects.all()
+        orders = Order.objects.filter(status = Order.StatusType.NEW)
+        if status:
+            orders = Order.objects.filter(status=status)
+        if category_id:
+            orders = orders.filter(product__category_id=category_id)
+        if district_id:
+            orders = orders.filter(district_id=district_id)
+        data['orders'] = orders
+        return data
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.role != 'operator':
-            return redirect('home')
-        return super().dispatch(request, *args, **kwargs)
+class OperatorOrderChangeDetailView(DetailView):
+    queryset = Order.objects.all()
+    template_name = 'apps/operator/order-change.html'
+    pk_url_kwarg = 'pk'
+    context_object_name = 'order'
 
 
-class CreateOperatorOrderView(LoginRequiredMixin, FormView):
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['regions'] = Region.objects.all()
+        return data
+
+
+class OrderUpdateView(UpdateView):
+    queryset = Order.objects.all()
+    form_class = OrderModelForm
+    template_name = 'apps/operator/order-change.html'
+    pk_url_kwarg = 'pk'
+    success_url = reverse_lazy('operator')
+
+
+def order_success(request):
+    order_id = request.session.get('last_order_id')
+
+    if not order_id:
+        messages.error(request, "Order topilmadi.")
+        return redirect('order')
+    order = Order.objects.get(id=order_id)
+    deliver_price = AdminSetting.objects.first().deliver_price
+
+    return render(request, 'apps/idk/order-successful.html', {'order': order, 'deliver_price': deliver_price})
+
+
+def user_orders(request):
+    orders = Order.objects.filter(owner=request.user).order_by('-ordered_at')
+
+    return render(request, 'apps/idk/order.html', {'orders': orders})
+
+
+class OrderFormView(FormView):
     form_class = OrderForm
-    template_name = 'apps/operator/operator-list.html'
-    success_url = reverse_lazy('operator_list')
-    login_url = reverse_lazy('login')
+    success_url = reverse_lazy('order-success')
 
     def form_valid(self, form):
         order = form.save(self.request.user)
-        messages.success(self.request, "Buyurtma muvaffaqiyatli yaratildi!")
-        return super().form_valid(form)
+        self.request.session['last_order_id'] = order.id
 
-    def form_invalid(self, form):
-        messages.error(self.request, f"Xatolik yuz berdi: {form.errors}")
-        return self.render_to_response(self.get_context_data(form=form))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['orders'] = Order.objects.all()
-        context['products'] = Product.objects.all()
-        context['regions'] = Region.objects.all()
-        context['streams'] = Stream.objects.all()
-        context['users'] = User.objects.filter(role='operator')
-        context['couriers'] = User.objects.filter(role='courier')
-        context['districts'] = District.objects.all()
-        return context
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.role != 'operator':
-            return redirect('home')
-        return super().dispatch(request, *args, **kwargs)
-
-
-class OperatorDetailView(LoginRequiredMixin, DetailView):
-    model = Order
-    template_name = 'apps/operator/operator-detail.html'
-    context_object_name = 'order'
-    login_url = reverse_lazy('login')
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.role != 'operator':
-            return redirect('home')
-        return super().dispatch(request, *args, **kwargs)
+        return redirect('order-success')

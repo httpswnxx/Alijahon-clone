@@ -116,3 +116,39 @@
         });
     });
 </script>
+
+
+{# ====================== Operator script ====================== #}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#id_region').change(function () {
+            var region_id = $(this).val();
+            var districtSelect = $('#id_district');
+            districtSelect.empty();
+            districtSelect.append('<option value="">Tuman tanlang</option>');
+
+            if (region_id) {
+                $.ajax({
+                    url: '{% url "districts_list" %}',
+                    data: { 'region_id': region_id },
+                    dataType: 'json',
+                    success: function (data) {
+                        $.each(data, function (index, district) {
+                            districtSelect.append('<option value="' + district.id + '">' + district.name + '</option>');
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Xatolik yuz berdi:', error);
+                    }
+                });
+            }
+        });
+
+        let initialRegionId = $('#id_region').val();
+        if (initialRegionId) {
+            $('#id_region').trigger('change');
+        }
+    });
+</script>

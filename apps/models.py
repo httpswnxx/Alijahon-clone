@@ -140,6 +140,7 @@ class Order(Model):
         DELIVERING = 'delivering', 'Delivering'
         DELIVERED = 'delivered', 'Delivered'
         NOT_PICK_UP = 'not_pick_up', 'Not Pick Up'
+        ARCHIVED = 'archived', 'Archived'
 
     owner = ForeignKey('User', on_delete=SET_NULL, null=True, blank=True)
     phone_number = CharField(max_length=20)
@@ -150,6 +151,10 @@ class Order(Model):
     status = CharField(max_length=20, choices=StatusType, default=StatusType.NEW)
     full_name = CharField(max_length=255)
     total_sum = DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    send_date = DateTimeField(null=True, blank=True)
+    district = ForeignKey('District', on_delete=SET_NULL, null=True, blank=True)
+    comment_operator = TextField(blank=True, null=True)
 
     @property
     def amount(self):
@@ -196,7 +201,6 @@ class AdminSetting(Model):
     start = DateField()
     finish = DateField()
     description = RichTextUploadingField()
-
 
 
 class Withdraw(Model):

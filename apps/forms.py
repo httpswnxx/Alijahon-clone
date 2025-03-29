@@ -1,12 +1,10 @@
 import re
-
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from django.forms.fields import CharField
 from django.forms import Form, ModelForm, IntegerField
 from django.forms.widgets import PasswordInput
-
 from apps.models import User, Order, Product, Stream, Withdraw
 from django import forms
 
@@ -82,7 +80,6 @@ class OrderForm(Form):
     def save(self, owner):
         product_id = self.cleaned_data.get("product_id")
 
-        # Ensure the product exists
         product = Product.objects.filter(id=product_id).first()
         if not product:
             raise ValidationError("Selected product does not exist.")
@@ -121,3 +118,20 @@ class WithdrawForm(ModelForm):
             'amount': 'Miqdor (so‘m)',
             'payment_method': 'To‘lov usuli',
         }
+
+
+class OperatorForm(Form):
+    category_id = CharField(required=False)
+    district_id = CharField(required=False)
+
+
+class OrderModelForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['comment_operator'].required = False
+
+    class Meta:
+        model = Order
+        fields = ['quantity', 'send_date', 'district', 'status', 'comment_operator']
+
+
