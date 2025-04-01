@@ -95,6 +95,35 @@ def a(request):
     return render(request, 'apps/idk/competition.html')
 
 
+def order_success(request):
+    order_id = request.session.get('last_order_id')
+
+    if not order_id:
+        messages.error(request, "Order topilmadi.")
+        return redirect('order')
+    order = Order.objects.get(id=order_id)
+    deliver_price = AdminSetting.objects.first().deliver_price
+
+    return render(request, 'apps/idk/order-successful.html', {'order': order, 'deliver_price': deliver_price})
+
+
+def user_orders(request):
+    orders = Order.objects.filter(owner=request.user).order_by('-ordered_at')
+
+    return render(request, 'apps/idk/order.html', {'orders': orders})
+
+
+class OrderFormView(FormView):
+    form_class = OrderForm
+    success_url = reverse_lazy('order-success')
+
+    def form_valid(self, form):
+        order = form.save(self.request.user)
+        self.request.session['last_order_id'] = order.id
+
+        return redirect('order-success')
+
+
 class ProfileFormView(LoginRequiredMixin, FormView):
     template_name = 'apps/idk/profile.html'
     form_class = ProfileUpdateForm
@@ -381,11 +410,17 @@ class WithdrawView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         withdraw = form.save(commit=False)
-        withdraw.user = self.request.user
+        user = self.request.user
+        request_amounted=withdraw.amount
+
+        if user.balance < request_amounted:
+            messages.error(self.request,"Balansingizda hisob yetarli emas")
+            return self.form_invalid(form)
+        withdraw.user = user
         withdraw.save()
-        messages.success(self.request,
-                         f"{withdraw.amount} so‘m uchun {withdraw.payment_method} orqali so‘rov yuborildi!")
+        messages.success(self.request,"Sorov yuborildi ! ")
         return super().form_valid(form)
+
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -394,23 +429,14 @@ class WithdrawView(LoginRequiredMixin, FormView):
         return data
 
 
-class DiagramView(LoginRequiredMixin, View):
-    template_name = "apps/idk/diagram.html"
-
-    def get(self, request):
-        return render(request, 'apps/idk/diagrams.html')
-
-
-
 
 
 class OperatorTemplateView(TemplateView):
     template_name = "apps/operator/operator-page.html"
-    def post(self,request):
+
+    def post(self, request):
         context = self.get_context_data()
         return render(request, 'apps/operator/operator-page.html', context)
-
-
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -419,9 +445,9 @@ class OperatorTemplateView(TemplateView):
         category_id = self.request.POST.get('category_id')
         district_id = self.request.POST.get('district_id')
         data['status'] = Order.StatusType.values
-        data['categories'] =  Category.objects.all()
-        data['regions'] =  Region.objects.all()
-        orders = Order.objects.filter(status = Order.StatusType.NEW)
+        data['categories'] = Category.objects.all()
+        data['regions'] = Region.objects.all()
+        orders = Order.objects.filter(status=Order.StatusType.NEW)
         if status:
             orders = Order.objects.filter(status=status)
         if category_id:
@@ -431,12 +457,12 @@ class OperatorTemplateView(TemplateView):
         data['orders'] = orders
         return data
 
+
 class OperatorOrderChangeDetailView(DetailView):
     queryset = Order.objects.all()
     template_name = 'apps/operator/order-change.html'
     pk_url_kwarg = 'pk'
     context_object_name = 'order'
-
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -452,30 +478,12 @@ class OrderUpdateView(UpdateView):
     success_url = reverse_lazy('operator')
 
 
-def order_success(request):
-    order_id = request.session.get('last_order_id')
+class CoinView(View):
+    template_name = 'apps/coin/coin.html'
+    context_object_name = 'users'
 
-    if not order_id:
-        messages.error(request, "Order topilmadi.")
-        return redirect('order')
-    order = Order.objects.get(id=order_id)
-    deliver_price = AdminSetting.objects.first().deliver_price
+    def get_queryset(self):
+        return User.objects.filter().order_by('id')
 
-    return render(request, 'apps/idk/order-successful.html', {'order': order, 'deliver_price': deliver_price})
-
-
-def user_orders(request):
-    orders = Order.objects.filter(owner=request.user).order_by('-ordered_at')
-
-    return render(request, 'apps/idk/order.html', {'orders': orders})
-
-
-class OrderFormView(FormView):
-    form_class = OrderForm
-    success_url = reverse_lazy('order-success')
-
-    def form_valid(self, form):
-        order = form.save(self.request.user)
-        self.request.session['last_order_id'] = order.id
-
-        return redirect('order-success')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)

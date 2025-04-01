@@ -26,14 +26,13 @@ urlpatterns += [
     path('admin_page/stats', StatsView.as_view(), name='stats'),
     path('konkurs/', CompetitionListView.as_view(), name='konkurs'),
     path('withdraw/', WithdrawView.as_view(), name='withdraw'),
-    path('diagrams', DiagramView.as_view(), name='diagrams'),
     path('operator-list/', OperatorTemplateView.as_view(), name='operator_list'),
     path("operator", OperatorTemplateView.as_view(), name="operator"),
     path("operator/order-change/<int:pk>", OperatorOrderChangeDetailView.as_view(), name="order-change")
 ]
 
-
-urlpatterns += [path('order/form',OrderFormView.as_view(),name='order'),
-                path('orders/', user_orders, name='user_orders'),
-                path('order-success/', order_success, name='order-success'),
-                path('order/update<int:pk>', OrderUpdateView.as_view(), name='order-update'),]
+urlpatterns += [
+    path('order/form', OrderFormView.as_view(), name='order'),
+    path('orders/', user_orders, name='user_orders'),
+    path('order-success/', order_success, name='order-success'),
+    path('order/update<int:pk>', OrderUpdateView.as_view(), name='order-update'), ]
