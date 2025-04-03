@@ -402,35 +402,6 @@ class CompetitionListView(ListView):
         return ranked_users
 
 
-class WithdrawView(LoginRequiredMixin, FormView):
-    template_name = "apps/idk/withdraw.html"
-    form_class = WithdrawForm
-    success_url = reverse_lazy('withdraw')
-    login_url = reverse_lazy("login")
-
-    def form_valid(self, form):
-        withdraw = form.save(commit=False)
-        user = self.request.user
-        request_amounted=withdraw.amount
-
-        if user.balance < request_amounted:
-            messages.error(self.request,"Balansingizda hisob yetarli emas")
-            return self.form_invalid(form)
-        withdraw.user = user
-        withdraw.save()
-        messages.success(self.request,"Sorov yuborildi ! ")
-        return super().form_valid(form)
-
-
-    def get_context_data(self, **kwargs):
-        data = super().get_context_data(**kwargs)
-        data["user"] = self.request.user
-        data["withdraws"] = Withdraw.objects.filter(user=self.request.user).order_by('-created_at')
-        return data
-
-
-
-
 class OperatorTemplateView(TemplateView):
     template_name = "apps/operator/operator-page.html"
 
@@ -487,3 +458,31 @@ class CoinView(View):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+
+class WithdrawView(LoginRequiredMixin, FormView):
+    template_name = "apps/idk/withdraw.html"
+    form_class = WithdrawForm
+    success_url = reverse_lazy('withdraw')
+    login_url = reverse_lazy("login")
+
+    def form_valid(self, form):
+        withdraw = form.save(commit=False)
+        user = self.request.user
+        request_amounted = withdraw.amount
+
+        if user.balance < request_amounted:
+            messages.error(self.request, "Balansingizda hisob yetarli emas")
+            return self.form_invalid(form)
+        user.balance -= request_amounted
+        user.save()
+        withdraw.user = user
+        withdraw.save()
+        messages.success(self.request, "Sorov yuborildi ! ")
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data["user"] = self.request.user
+        data["withdraws"] = Withdraw.objects.filter(user=self.request.user).order_by('-created_at')
+        return data
